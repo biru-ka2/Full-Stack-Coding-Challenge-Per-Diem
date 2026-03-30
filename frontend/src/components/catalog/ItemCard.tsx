@@ -34,7 +34,7 @@ export function ItemCard({ item, featured = false }: Props) {
   if (featured) {
     return (
       <div className="group bg-[#ffede5] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500">
-        <div className="aspect-video overflow-hidden relative">
+        <div className="aspect-[4/3] overflow-hidden relative">
           {item.image_url ? (
             <img
               src={item.image_url}
@@ -87,7 +87,7 @@ export function ItemCard({ item, featured = false }: Props) {
 
   return (
     <div className="flex bg-[#ffede5] rounded-xl overflow-hidden group hover:shadow-md transition-all duration-300">
-      <div className="w-1/3 overflow-hidden flex-shrink-0">
+      <div className="w-1/3 aspect-[4/3] overflow-hidden flex-shrink-0">
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -96,7 +96,7 @@ export function ItemCard({ item, featured = false }: Props) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full min-h-[120px] bg-gradient-to-br from-[#ffc5a5] to-[#ff7941]/30 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-[#ffc5a5] to-[#ff7941]/30 flex items-center justify-center">
             <span className="material-symbols-outlined text-3xl text-[#a33800]/20">restaurant</span>
           </div>
         )}
