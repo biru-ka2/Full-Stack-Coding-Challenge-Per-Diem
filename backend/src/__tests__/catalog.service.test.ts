@@ -37,7 +37,7 @@ describe("getCatalogByLocation", () => {
     expect(item.name).toBe("Cold Brew");
     expect(item.description).toBe("Smooth coffee");
     expect(item.image_url).toBe("https://example.com/cold-brew.jpg");
-    expect(item.variations).toEqual([{ id: "VAR_1", name: "Regular", price: 450 }]);
+    expect(item.variations).toEqual([{ id: "VAR_1", name: "Regular", price: 450, currency: "USD" }]);
   });
 
   it("returns cached catalog when present", async () => {
@@ -50,6 +50,21 @@ describe("getCatalogByLocation", () => {
     const result = await getCatalogByLocation("LOC_1");
     expect(result).toEqual(cached);
     expect(fetchAllCatalogObjects).not.toHaveBeenCalled();
+  });
+
+  it("shares a cached catalog snapshot between catalog and categories", async () => {
+    const store = new Map<string, unknown>();
+    vi.mocked(cache.get).mockImplementation(async (key: string) => (store.get(key) as any) ?? null);
+    vi.mocked(cache.set).mockImplementation(async (key: string, value: unknown) => {
+      store.set(key, value);
+    });
+    vi.mocked(fetchAllCatalogObjects).mockClear();
+
+    await getCatalogByLocation("LOC_1");
+    await getCategoriesByLocation("LOC_1");
+
+    expect(fetchAllCatalogObjects).toHaveBeenCalledTimes(1);
+    expect(store.has("catalog_snapshot:LOC_1")).toBe(true);
   });
 });
 

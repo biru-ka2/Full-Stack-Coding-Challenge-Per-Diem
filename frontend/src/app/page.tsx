@@ -14,6 +14,7 @@ export default function HomePage() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const { locations, loading: locLoading, error: locError, retry: retryLoc } = useLocations();
   const { catalog, categories, loading: catLoading, error: catError, retry: retryCat } = useCatalog(selectedLocation);
 
@@ -30,6 +31,7 @@ export default function HomePage() {
   function handleLocationChange(id: string) {
     setSelectedLocation(id);
     setSearchQuery("");
+    setActiveCategory(null);
     localStorage.setItem(STORAGE_KEY, id);
     setLocationPickerOpen(false);
   }
@@ -140,6 +142,20 @@ export default function HomePage() {
       {/* ── Body ── */}
       <div className="pt-16 max-w-6xl mx-auto px-4">
 
+        {/* Locations loading (main) */}
+        {!selectedLocation && locLoading && (
+          <div className="flex flex-col items-center justify-center py-40 text-center">
+            <span className="material-symbols-outlined text-7xl text-[#dd9f7c] mb-5 animate-pulse">location_on</span>
+            <h2 className="font-[Epilogue] font-bold text-2xl text-[#4b240a] mb-2">Loading locations…</h2>
+            <p className="text-sm text-[#805032]">Fetching nearby dining options.</p>
+          </div>
+        )}
+
+        {/* Locations error (main) */}
+        {!selectedLocation && !locLoading && locError && (
+          <ErrorState message={locError} onRetry={retryLoc} />
+        )}
+
         {/* No location selected */}
         {!selectedLocation && !locLoading && !locError && (
           <div className="flex flex-col items-center justify-center py-40 text-center">
@@ -174,7 +190,7 @@ export default function HomePage() {
                 {!catLoading && !catError && categories.length > 0 && (
                   <div>
                     <p className="text-[9px] font-[Manrope] uppercase tracking-widest text-[#805032] mb-3 px-1">Categories</p>
-                    <SidebarCategoryList categories={categories} />
+                    <SidebarCategoryList categories={categories} activeCategory={activeCategory} onChange={setActiveCategory} />
                   </div>
                 )}
               </div>
@@ -215,7 +231,13 @@ export default function HomePage() {
               ) : catError ? (
                 <ErrorState message="Our kitchen is momentarily disconnected." onRetry={retryCat} />
               ) : (
-                <CatalogView catalog={catalog} categories={categories} searchQuery={searchQuery} />
+                <CatalogView
+                  catalog={catalog}
+                  categories={categories}
+                  searchQuery={searchQuery}
+                  activeCategory={activeCategory}
+                  onActiveCategoryChange={setActiveCategory}
+                />
               )}
             </main>
 
@@ -227,7 +249,15 @@ export default function HomePage() {
 }
 
 // Sidebar category list — scrolls to section on click
-function SidebarCategoryList({ categories }: { categories: { id: string; name: string; item_count: number }[] }) {
+function SidebarCategoryList({
+  categories,
+  activeCategory,
+  onChange,
+}: {
+  categories: { id: string; name: string; item_count: number }[];
+  activeCategory: string | null;
+  onChange: (name: string) => void;
+}) {
   function scrollTo(name: string) {
     const el = document.getElementById(`category-${name}`);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -238,8 +268,15 @@ function SidebarCategoryList({ categories }: { categories: { id: string; name: s
       {categories.map((cat) => (
         <button
           key={cat.id}
-          onClick={() => scrollTo(cat.name)}
-          className="w-full text-left px-3 py-2 rounded-lg text-sm font-[Manrope] font-medium text-[#805032] hover:bg-[#ffede5] hover:text-[#a33800] transition-colors flex justify-between items-center group"
+          onClick={() => {
+            onChange(cat.name);
+            scrollTo(cat.name);
+          }}
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-[Manrope] font-medium transition-colors flex justify-between items-center group ${
+            activeCategory === cat.name
+              ? "bg-[#ffede5] text-[#a33800]"
+              : "text-[#805032] hover:bg-[#ffede5] hover:text-[#a33800]"
+          }`}
         >
           <span>{cat.name}</span>
           <span className="text-[10px] text-[#805032]/50 group-hover:text-[#a33800]/50">{cat.item_count}</span>

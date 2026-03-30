@@ -10,6 +10,7 @@ export interface Variation {
   id: string;
   name: string;
   price: number | null;
+  currency: string | null;
 }
 
 export interface CatalogItem {
@@ -34,4 +35,5 @@ export interface Category {
 
 export interface ApiError {
   error: string;
+  code?: string;
 }

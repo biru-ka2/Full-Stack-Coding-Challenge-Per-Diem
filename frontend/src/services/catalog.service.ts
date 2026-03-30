@@ -1,14 +1,17 @@
 import { API_BASE_URL } from "@/lib/config";
-import type { CatalogGroup, Category } from "@/types";
+import type { ApiError, CatalogGroup, Category } from "@/types";
 
 export async function getCatalog(locationId: string): Promise<CatalogGroup[]> {
   const res = await fetch(
     `${API_BASE_URL}/catalog?location_id=${locationId}`,
     { cache: "no-store" }
   );
-  if (!res.ok) throw new Error("Failed to fetch catalog");
-  const data = await res.json();
-  return data.catalog as CatalogGroup[];
+  const data = (await res.json().catch(() => null)) as { catalog?: CatalogGroup[] } | ApiError | null;
+  if (!res.ok) {
+    const message = data && "error" in data && data.error ? data.error : "Failed to fetch catalog";
+    throw new Error(message);
+  }
+  return (data && "catalog" in data ? data.catalog : []) as CatalogGroup[];
 }
 
 export async function getCategories(locationId: string): Promise<Category[]> {
@@ -16,7 +19,10 @@ export async function getCategories(locationId: string): Promise<Category[]> {
     `${API_BASE_URL}/catalog/categories?location_id=${locationId}`,
     { cache: "no-store" }
   );
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  const data = await res.json();
-  return data.categories as Category[];
+  const data = (await res.json().catch(() => null)) as { categories?: Category[] } | ApiError | null;
+  if (!res.ok) {
+    const message = data && "error" in data && data.error ? data.error : "Failed to fetch categories";
+    throw new Error(message);
+  }
+  return (data && "categories" in data ? data.categories : []) as Category[];
 }

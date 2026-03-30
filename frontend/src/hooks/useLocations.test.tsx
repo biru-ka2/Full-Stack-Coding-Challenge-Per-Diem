@@ -28,7 +28,7 @@ describe("useLocations", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.error).toBe("Failed to fetch locations");
+    expect(result.current.error).toBe("fail");
     expect(result.current.locations).toEqual([]);
 
     server.resetHandlers();

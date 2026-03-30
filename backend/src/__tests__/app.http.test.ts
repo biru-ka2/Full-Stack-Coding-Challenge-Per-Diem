@@ -46,12 +46,22 @@ describe("HTTP app", () => {
   it("GET /api/catalog without location_id returns 422", async () => {
     const res = await request(app).get("/api/catalog").expect(422);
     expect(res.body.error).toContain("location_id");
+    expect(res.body.code).toBe("VALIDATION_ERROR");
   });
 
   it("maps AppError to response status", async () => {
-    vi.mocked(squareService.fetchAllCatalogObjects).mockRejectedValue(new AppError("Square unavailable", 502));
+    vi.mocked(squareService.fetchAllCatalogObjects).mockRejectedValue(
+      new AppError("Square unavailable", 502, "UPSTREAM_UNAVAILABLE")
+    );
     const res = await request(app).get("/api/catalog?location_id=LOC_1").expect(502);
     expect(res.body.error).toBe("Square unavailable");
+    expect(res.body.code).toBe("UPSTREAM_UNAVAILABLE");
+  });
+
+  it("GET /api/does-not-exist returns 404 with code", async () => {
+    const res = await request(app).get("/api/does-not-exist").expect(404);
+    expect(res.body.error).toContain("not found");
+    expect(res.body.code).toBe("NOT_FOUND");
   });
 });
 
