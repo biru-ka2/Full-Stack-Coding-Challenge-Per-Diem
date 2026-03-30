@@ -1,0 +1,57 @@
+{
+  "objects": [
+    {
+      "id": "ITEM_BEV",
+      "type": "ITEM",
+      "present_at_location_ids": ["LOC_1"],
+      "item_data": {
+        "name": "Cold Brew",
+        "description": "Smooth coffee",
+        "category_id": "CAT_BEV",
+        "image_ids": ["IMG_1"],
+        "variations": [
+          {
+            "id": "VAR_1",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "name": "Regular",
+              "price_money": { "amount": 450, "currency": "USD" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "ITEM_OTHER_LOC",
+      "type": "ITEM",
+      "present_at_location_ids": ["LOC_2"],
+      "item_data": {
+        "name": "Wrong Location Item",
+        "category_id": "CAT_BEV"
+      }
+    },
+    {
+      "id": "ITEM_UNCAT",
+      "type": "ITEM",
+      "present_at_all_locations": true,
+      "item_data": {
+        "name": "Uncategorized Snack",
+        "description": "No category",
+        "variations": []
+      }
+    }
+  ],
+  "related_objects": [
+    {
+      "id": "CAT_BEV",
+      "type": "CATEGORY",
+      "category_data": { "name": "Beverages" }
+    },
+    {
+      "id": "IMG_1",
+      "type": "IMAGE",
+      "image_data": { "url": "https://example.com/cold-brew.jpg" }
+    }
+  ]
+}
+
