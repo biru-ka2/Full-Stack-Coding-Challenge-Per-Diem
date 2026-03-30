@@ -9,6 +9,15 @@ import type {
 } from "../types";
 
 const CACHE_TTL_S = 5 * 60; // 5 minutes
+const UNCATEGORIZED = "Uncategorized";
+
+function compareCategoryNames(a: string, b: string): number {
+  const aIsUncat = a === UNCATEGORIZED;
+  const bIsUncat = b === UNCATEGORIZED;
+  if (aIsUncat && !bIsUncat) return 1;
+  if (!aIsUncat && bIsUncat) return -1;
+  return a.localeCompare(b);
+}
 
 function isPresentAtLocation(obj: SquareCatalogObject, locationId: string): boolean {
   if (obj.present_at_all_locations) return true;
@@ -37,7 +46,7 @@ async function getCatalogSnapshot(locationId: string): Promise<CatalogSnapshot> 
 
   for (const obj of related_objects) {
     if (obj.type === "CATEGORY" && obj.category_data) {
-      categoryMap.set(obj.id, obj.category_data.name ?? "Uncategorized");
+      categoryMap.set(obj.id, obj.category_data.name ?? UNCATEGORIZED);
     }
     if (obj.type === "IMAGE" && obj.image_data?.url) {
       imageMap.set(obj.id, obj.image_data.url);
@@ -72,7 +81,7 @@ export async function getCatalogByLocation(locationId: string): Promise<CatalogG
   for (const obj of snap.items) {
     const item = obj.item_data!;
     const categoryId = item.category_id ?? item.categories?.[0]?.id;
-    const categoryName = categoryId ? (categoryMap.get(categoryId) ?? "Uncategorized") : "Uncategorized";
+    const categoryName = categoryId ? (categoryMap.get(categoryId) ?? UNCATEGORIZED) : UNCATEGORIZED;
 
     const imageId = item.image_ids?.[0];
     const imageUrl = imageId ? (imageMap.get(imageId) ?? null) : null;
@@ -101,6 +110,7 @@ export async function getCatalogByLocation(locationId: string): Promise<CatalogG
     category,
     items,
   }));
+  result.sort((a, b) => compareCategoryNames(a.category, b.category));
 
   await cache.set(cacheKey, result, CACHE_TTL_S);
   return result;
@@ -115,7 +125,7 @@ export async function getCategoriesByLocation(locationId: string): Promise<Categ
   const snap = await getCatalogSnapshot(locationId);
 
   for (const [id, name] of Object.entries(snap.categoryMap)) {
-    categoryStats.set(id, { id, name: name ?? "Uncategorized", count: 0 });
+    categoryStats.set(id, { id, name: name ?? UNCATEGORIZED, count: 0 });
   }
 
   for (const obj of snap.items) {
@@ -128,6 +138,7 @@ export async function getCategoriesByLocation(locationId: string): Promise<Categ
   const result: CategorySummary[] = Array.from(categoryStats.values())
     .filter((c) => c.count > 0)
     .map((c) => ({ id: c.id, name: c.name, item_count: c.count }));
+  result.sort((a, b) => compareCategoryNames(a.name, b.name));
 
   await cache.set(cacheKey, result, CACHE_TTL_S);
   return result;

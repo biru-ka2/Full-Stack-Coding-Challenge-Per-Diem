@@ -76,7 +76,7 @@ export default function HomePage() {
                 <span className="material-symbols-outlined text-[18px] text-[#805032] group-focus-within:text-[#a33800] transition-colors">search</span>
               </div>
               <input
-                type="search"
+                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search curated flavors..."
@@ -205,7 +205,7 @@ export default function HomePage() {
                     <span className="material-symbols-outlined text-[#805032] group-focus-within:text-[#a33800] transition-colors">search</span>
                   </div>
                   <input
-                    type="search"
+                    type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search curated flavors..."
@@ -256,7 +256,7 @@ function SidebarCategoryList({
 }: {
   categories: { id: string; name: string; item_count: number }[];
   activeCategory: string | null;
-  onChange: (name: string) => void;
+  onChange: (name: string | null) => void;
 }) {
   function scrollTo(name: string) {
     const el = document.getElementById(`category-${name}`);
@@ -265,6 +265,22 @@ function SidebarCategoryList({
 
   return (
     <nav className="space-y-0.5">
+      <button
+        onClick={() => {
+          onChange(null);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-[Manrope] font-medium transition-colors flex justify-between items-center group ${
+          activeCategory === null
+            ? "bg-[#ffede5] text-[#a33800]"
+            : "text-[#805032] hover:bg-[#ffede5] hover:text-[#a33800]"
+        }`}
+      >
+        <span>All</span>
+        <span className="text-[10px] text-[#805032]/50 group-hover:text-[#a33800]/50">
+          {categories.reduce((sum, c) => sum + (c.item_count ?? 0), 0)}
+        </span>
+      </button>
       {categories.map((cat) => (
         <button
           key={cat.id}
