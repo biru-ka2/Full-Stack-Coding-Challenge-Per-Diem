@@ -117,9 +117,5 @@ Then run the frontend locally (`cd frontend && npm run dev`) and use `NEXT_PUBLI
 
 ## Screenshots / demo
 
-- **Loom video **: add your Loom link here: `https://www.loom.com/share/f140c164fe1a4576a4a0a139df894455`
+- **Loom video** : add your Loom link here: [https://www.loom.com/share/f140c164fe1a4576a4a0a139df894455](https://www.loom.com/share/f140c164fe1a4576a4a0a139df894455)
 
-Screenshots (local run):
-
-![Home loading locations](docs/screenshots/screenshot-home-loading.png)
-![Home choose location prompt](docs/screenshots/screenshot-home-prompt.png)
