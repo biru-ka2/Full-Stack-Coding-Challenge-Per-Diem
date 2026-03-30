@@ -7,13 +7,10 @@ Mobile-friendly web app that proxies the Square API on the backend and renders a
 - **Frontend**: Next.js (App Router) + TypeScript + Tailwind
 - **Testing**: Vitest (unit/component), Supertest (backend HTTP), Playwright (frontend e2e)
 
-## Repo layout
+## Repository layout
 - `[backend/](backend/)`: Square proxy API (`/api/*`)
 - `[frontend/](frontend/)`: menu UI (single page)
 - `docker-compose.yml`: **backend + redis** (frontend runs locally)
-
-## Requirements mapping
-See `[COMPLIANCE_CHECKLIST.md](COMPLIANCE_CHECKLIST.md)` for a requirement-by-requirement checklist with evidence links.
 
 ## Setup
 
