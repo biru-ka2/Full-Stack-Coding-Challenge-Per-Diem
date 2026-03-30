@@ -8,6 +8,7 @@ interface Env {
   squareAccessToken: string;
   squareEnvironment: string;
   squareBaseUrl: string;
+  redisUrl: string | null;
   upstashRedisUrl: string | null;
   upstashRedisToken: string | null;
 }
@@ -23,6 +24,7 @@ export const env: Env = {
     process.env.SQUARE_ENVIRONMENT === "production"
       ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com",
+  redisUrl: process.env.REDIS_URL ?? null,
   upstashRedisUrl: process.env.UPSTASH_REDIS_REST_URL ?? null,
   upstashRedisToken: process.env.UPSTASH_REDIS_REST_TOKEN ?? null,
 };

@@ -12,6 +12,7 @@ export interface VariationResponse {
   id: string;
   name: string;
   price: number | null; // cents
+  currency: string | null;
 }
 
 export interface CatalogItemResponse {

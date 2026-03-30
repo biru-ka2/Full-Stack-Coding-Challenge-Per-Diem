@@ -9,10 +9,20 @@ interface Props {
   catalog: CatalogGroup[];
   categories: Category[];
   searchQuery?: string;
+  activeCategory?: string | null;
+  onActiveCategoryChange?: (categoryName: string | null) => void;
 }
 
-export function CatalogView({ catalog, categories, searchQuery = "" }: Props) {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+export function CatalogView({
+  catalog,
+  categories,
+  searchQuery = "",
+  activeCategory: controlledActive,
+  onActiveCategoryChange,
+}: Props) {
+  const [uncontrolledActive, setUncontrolledActive] = useState<string | null>(null);
+  const activeCategory = controlledActive !== undefined ? controlledActive : uncontrolledActive;
+  const setActiveCategory = onActiveCategoryChange ?? setUncontrolledActive;
 
   const query = searchQuery.trim().toLowerCase();
 

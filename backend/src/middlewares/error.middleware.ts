@@ -3,7 +3,7 @@ import { AppError } from "../utils/errors";
 import type { ApiErrorResponse } from "../types";
 
 export const notFoundHandler = (req: Request, res: Response): void => {
-  const body: ApiErrorResponse = { error: `Route ${req.originalUrl} not found` };
+  const body: ApiErrorResponse = { error: `Route ${req.originalUrl} not found`, code: "NOT_FOUND" };
   res.status(404).json(body);
 };
 
@@ -15,7 +15,7 @@ export const errorHandler = (
   _next: NextFunction
 ): void => {
   if (err instanceof AppError) {
-    const body: ApiErrorResponse = { error: err.message };
+    const body: ApiErrorResponse = { error: err.message, code: err.code };
     res.status(err.statusCode).json(body);
     return;
   }

@@ -8,9 +8,17 @@ interface Props {
   featured?: boolean;
 }
 
-function formatPrice(cents: number | null): string {
+function formatPrice(cents: number | null, currency: string | null): string {
   if (cents === null) return "Market price";
-  return "$" + (cents / 100).toFixed(2);
+  const value = cents / 100;
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+    } catch {
+      // fall through to a simple USD-style format
+    }
+  }
+  return "$" + value.toFixed(2);
 }
 
 export function ItemCard({ item, featured = false }: Props) {
@@ -20,6 +28,7 @@ export function ItemCard({ item, featured = false }: Props) {
   const displayDesc = isLong && !expanded ? desc.slice(0, 120).trimEnd() + "..." : desc;
 
   const firstPrice = item.variations[0]?.price ?? null;
+  const firstCurrency = item.variations[0]?.currency ?? null;
   const singleVariation = item.variations.length === 1;
 
   if (featured) {
@@ -46,7 +55,7 @@ export function ItemCard({ item, featured = false }: Props) {
         <div className="p-5">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-[Epilogue] font-bold text-xl text-[#4b240a] leading-tight pr-2">{item.name}</h3>
-            <span className="font-[Epilogue] font-black text-[#a33800] flex-shrink-0">{formatPrice(firstPrice)}</span>
+            <span className="font-[Epilogue] font-black text-[#a33800] flex-shrink-0">{formatPrice(firstPrice, firstCurrency)}</span>
           </div>
           {desc && (
             <p className="font-[Manrope] text-[#805032] text-sm mb-4 leading-relaxed">
@@ -66,7 +75,7 @@ export function ItemCard({ item, featured = false }: Props) {
               {item.variations.map((v) => (
                 <div key={v.id} className="flex-1 min-w-[80px] bg-[#ffd4bd] p-3 rounded-lg text-center">
                   <span className="block text-[10px] font-[Manrope] text-[#805032] uppercase tracking-widest mb-1">{v.name}</span>
-                  <span className="font-[Epilogue] font-bold text-[#4b240a] text-sm">{formatPrice(v.price)}</span>
+                  <span className="font-[Epilogue] font-bold text-[#4b240a] text-sm">{formatPrice(v.price, v.currency ?? firstCurrency)}</span>
                 </div>
               ))}
             </div>
@@ -104,10 +113,10 @@ export function ItemCard({ item, featured = false }: Props) {
         <div className="mt-3 flex justify-between items-center">
           <div>
             {singleVariation ? (
-              <span className="font-[Epilogue] font-bold text-[#a33800]">{formatPrice(firstPrice)}</span>
+              <span className="font-[Epilogue] font-bold text-[#a33800]">{formatPrice(firstPrice, firstCurrency)}</span>
             ) : (
               <span className="font-[Epilogue] font-bold text-[#a33800] text-sm">
-                from {formatPrice(firstPrice)}
+                from {formatPrice(firstPrice, firstCurrency)}
               </span>
             )}
           </div>

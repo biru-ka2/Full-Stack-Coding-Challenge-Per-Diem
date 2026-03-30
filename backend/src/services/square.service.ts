@@ -25,25 +25,42 @@ function squareRequest<T>(path: string, method: "GET" | "POST" = "GET", body?: o
       let data = "";
       res.on("data", (chunk: string) => (data += chunk));
       res.on("end", () => {
+        const statusCode = res.statusCode ?? 502;
         try {
-          const parsed = JSON.parse(data) as { errors?: SquareError[] } & T;
+          const parsed = (data ? JSON.parse(data) : {}) as { errors?: SquareError[] } & T;
           if (parsed.errors && parsed.errors.length > 0) {
             const e = parsed.errors[0];
             return reject(
               new AppError(
                 mapSquareErrorMessage(e),
-                mapSquareStatusCode(e.category)
+                mapSquareStatusCode(e.category),
+                mapSquareErrorCode(e)
+              )
+            );
+          }
+          if (statusCode >= 400) {
+            return reject(
+              new AppError(
+                `Square API request failed with status ${statusCode}`,
+                502,
+                "SQUARE_UPSTREAM_ERROR"
               )
             );
           }
           resolve(parsed);
         } catch {
-          reject(new AppError("Failed to parse Square API response", 502));
+          if (statusCode >= 400) {
+            reject(new AppError(`Square API request failed with status ${statusCode}`, 502, "SQUARE_UPSTREAM_ERROR"));
+            return;
+          }
+          reject(new AppError("Failed to parse Square API response", 502, "UPSTREAM_BAD_RESPONSE"));
         }
       });
     });
 
-    req.on("error", () => reject(new AppError("Square API request failed — upstream unavailable", 502)));
+    req.on("error", () =>
+      reject(new AppError("Square API request failed — upstream unavailable", 502, "UPSTREAM_UNAVAILABLE"))
+    );
     if (payload) req.write(payload);
     req.end();
   });
@@ -64,15 +81,36 @@ function mapSquareStatusCode(category: string): number {
   return map[category] ?? 502;
 }
 
+function mapSquareErrorCode(e: SquareError): string {
+  const categoryMap: Record<string, string> = {
+    AUTHENTICATION_ERROR: "SQUARE_AUTH",
+    INVALID_REQUEST_ERROR: "SQUARE_INVALID_REQUEST",
+    RATE_LIMIT_ERROR: "SQUARE_RATE_LIMIT",
+    PAYMENT_METHOD_ERROR: "SQUARE_PAYMENT_METHOD",
+    REFUND_ERROR: "SQUARE_REFUND",
+  };
+  return categoryMap[e.category] ?? `SQUARE_${e.code}`;
+}
+
 // ── Public API ───────────────────────────────────────────────────────
 
 interface LocationsResponse {
   locations?: SquareLocation[];
+  cursor?: string;
 }
 
 export async function fetchLocations(): Promise<SquareLocation[]> {
-  const data = await squareRequest<LocationsResponse>("/v2/locations");
-  return data.locations ?? [];
+  const all: SquareLocation[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const path = cursor ? `/v2/locations?cursor=${encodeURIComponent(cursor)}` : "/v2/locations";
+    const data = await squareRequest<LocationsResponse>(path);
+    if (data.locations) all.push(...data.locations);
+    cursor = data.cursor;
+  } while (cursor);
+
+  return all;
 }
 
 interface CatalogSearchBody {
